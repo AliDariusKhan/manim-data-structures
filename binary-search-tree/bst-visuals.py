@@ -37,10 +37,9 @@ class InsertOneElement(Scene):
 class InsertAllElements(Scene):
     """Builds a BST with a random list of elements"""
     def construct(self):
-        random_list = sample(range(100), 30)
-        bst = BST([random_list[0]])
-
-        for num in random_list[1:]:
+        random_list = sample(range(100), 3)
+        bst = BST()
+        for num in random_list:
             to_remove = insert_bst(self, bst, num)
             self.remove(*to_remove)
 
@@ -48,8 +47,8 @@ class InsertAllElements(Scene):
 class InsertAllElementsAndRebalance(Scene):
     def construct(self):
         random_list = [1, 0, 4, 2, 3]
-        bst = BST([random_list[0]])
-        for num in random_list[1:]:
+        bst = BST()
+        for num in random_list:
             to_remove = insert_bst(self, bst, num)
             self.remove(*to_remove)
             rebalance_bst(self, bst.root, bst)

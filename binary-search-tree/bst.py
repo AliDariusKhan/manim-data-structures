@@ -30,9 +30,10 @@ class BST:
         for key in keys:
             self.root, balance_change = insert_helper(self.root, key)
     
-    def __init__(self, keys):
+    def __init__(self, keys=None):
         self.root = None
-        self.insert(keys)
+        if keys:
+            self.insert(keys)
     
     def search(self, key):
         """Returns a list of nodes containing the path from root to target node"""
