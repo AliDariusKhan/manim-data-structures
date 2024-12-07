@@ -103,7 +103,8 @@ def get_bst(bst: BST, left=-7, width=14, top=4, height=8, extra_space_at_top=Fal
 
         circles[current_node] = Group(
             Circle(radius=radius, color=BLUE, stroke_width=scale_factor*3).set_fill(BLACK, opacity=1),
-            Text(str(current_node.key), font_size=scale_factor*20)
+            Text(str(current_node.key), font_size=scale_factor*25),
+            Text(str(current_node.balance), font_size=scale_factor*20).move_to(DOWN*radius*1.5)
         ).move_to(RIGHT*x_coord + UP*y_coord)
 
         get_circles(current_node.left, depth+1)
