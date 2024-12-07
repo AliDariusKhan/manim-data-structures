@@ -4,6 +4,8 @@ class Node:
         self.key = key
         self.left = None
         self.right = None
+        self.balance = 0
+        self.parent = None
 
 class BST:
     """Class that represents a full binary search tree"""
@@ -14,15 +16,19 @@ class BST:
         """Inserts a list of keys into the BST recursively"""
         def insert_helper(node, key):
             if node is None:
-                return Node(key)
+                return Node(key), True
             if key < node.key:
-                node.left = insert_helper(node.left, key)
+                node.left, balance_change = insert_helper(node.left, key)
+                node.balance -= 1
+                node.left.parent = node
             else:
-                node.right = insert_helper(node.right, key)
-            return node
+                node.right, balance_change = insert_helper(node.right, key)
+                node.balance += 1
+                node.right.parent = node
+            return node, node.balance != 0
 
         for key in keys:
-            self.root = insert_helper(self.root, key)
+            self.root, balance_change = insert_helper(self.root, key)
     
     def __init__(self, keys):
         self.root = None
@@ -67,4 +73,15 @@ class BST:
         elif temp.left is None or temp.right is None:
             if parent is None:
                 self.root = temp.left 
+    
+    def update_balances(self):
+        """Updates the balance of all nodes in the tree"""
+        def update_balances_helper(node):
+            if node is None:
+                return -1
+            left_depth = 1 + update_balances_helper(node.left)
+            right_depth = 1 + update_balances_helper(node.right)
+            node.balance = right_depth - left_depth
+            return max(left_depth, right_depth)
         
+        update_balances_helper(self.root)
