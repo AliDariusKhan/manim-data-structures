@@ -2,6 +2,7 @@ from manim import *
 from bst import BST
 from get_bst import get_bst
 from insert_bst import insert_bst
+from rebalance_bst import rebalance_bst
 from random import sample
 
 class DrawOneBST(Scene):
@@ -42,3 +43,13 @@ class InsertAllElements(Scene):
         for num in random_list[1:]:
             to_remove = insert_bst(self, bst, num)
             self.remove(*to_remove)
+
+
+class InsertAllElementsAndRebalance(Scene):
+    def construct(self):
+        random_list = [1, 0, 4, 2, 3]
+        bst = BST([random_list[0]])
+        for num in random_list[1:]:
+            to_remove = insert_bst(self, bst, num)
+            self.remove(*to_remove)
+            rebalance_bst(self, bst.root, bst)
