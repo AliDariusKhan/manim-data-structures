@@ -1,6 +1,7 @@
 from manim import *
 from bst import BST
 from get_bst import get_bst
+from bst_traversal import animate_tree_traversal
 from copy import deepcopy
 
 def insert_bst(scene: Scene, bst: BST, key: int, left=-7, width=14, top=4, height=8):
@@ -28,24 +29,7 @@ def insert_bst(scene: Scene, bst: BST, key: int, left=-7, width=14, top=4, heigh
     bst.update_balances()
     new_arrows, new_circles, new_scale = get_bst(bst, left, width, top, height, True)
 
-    key_node, path = bst.search(key)
-
-    tracing_circle = Group(
-        Circle(
-            radius=old_scale*0.375, 
-            color=YELLOW, 
-            stroke_width=old_scale*3
-        ).set_fill(BLACK, opacity=1),
-        Text(str(key), font_size=old_scale*25),
-        Text(str(key_node.balance), font_size=old_scale*20, fill_opacity=0).move_to(DOWN*old_scale*0.375)
-    ).next_to(old_circles[path[0]], UP, buff=10)
-
-    scene.add(*old_arrows.values(), *old_circles.values())
-    scene.add(tracing_circle)
-    
-    for node in path:
-        scene.play(tracing_circle.animate.next_to(old_circles[node], UP))
-        scene.wait()
+    tracing_circle, key_node = animate_tree_traversal(scene, bst, key, old_scale, old_arrows, old_circles, YELLOW)
     
     scene.play(
         *[Transform(old_circles[node], new_circles[node]) for node in old_circles.keys()],
