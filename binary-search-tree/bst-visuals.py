@@ -46,9 +46,10 @@ class InsertAllElements(Scene):
 
 class InsertAllElementsAndRebalance(Scene):
     def construct(self):
-        random_list = [1, 0, 4, 2, 3]
+        random_list = sample(range(100), 4)
+        print(random_list)
         bst = BST()
         for num in random_list:
-            to_remove = insert_bst(self, bst, num)
-            self.remove(*to_remove)
+            insert_bst(self, bst, num)
             rebalance_bst(self, bst.root, bst)
+            

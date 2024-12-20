@@ -19,7 +19,8 @@ def insert_bst(scene: Scene, bst: BST, key: int, left=-7, width=14, top=4, heigh
             circle[0].animate.set_stroke(color=BLUE),
             circle[2].animate.set_opacity(1)
         )
-        return [circle]
+        scene.remove(circle)
+        return
         
     old_arrows, old_circles, old_scale = get_bst(bst, left, width, top, height, True)
 
@@ -41,7 +42,6 @@ def insert_bst(scene: Scene, bst: BST, key: int, left=-7, width=14, top=4, heigh
 
     scene.add(*old_arrows.values(), *old_circles.values())
     scene.add(tracing_circle)
-    # scene.wait()
     
     for node in path:
         scene.play(tracing_circle.animate.next_to(old_circles[node], UP))
@@ -64,6 +64,6 @@ def insert_bst(scene: Scene, bst: BST, key: int, left=-7, width=14, top=4, heigh
         new_arrows[key_node]
     ]
 
-    return to_remove
+    scene.remove(*to_remove)
 
 
