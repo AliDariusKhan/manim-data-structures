@@ -5,6 +5,18 @@ from insert_bst import insert_bst
 from rebalance_bst import rebalance_bst
 from random import sample
 
+SPEED_FACTOR = 10
+
+class FastScene(Scene):
+    default_speedinfo = {0: SPEED_FACTOR, 1: SPEED_FACTOR}
+
+    def play(self, *animations, **play_kwargs):
+        animation_group = AnimationGroup(*animations)
+
+        speedinfo = play_kwargs.pop("speedinfo", self.default_speedinfo)
+
+        super().play(ChangeSpeed(animation_group, speedinfo=speedinfo), **play_kwargs)
+
 class DrawOneBST(Scene):
     """Draws one binary search tree of 30 random numbers"""
     def construct(self):
@@ -44,7 +56,7 @@ class InsertAllElements(Scene):
             self.remove(*to_remove)
 
 
-class InsertAllElementsAndRebalance(Scene):
+class InsertAllElementsAndRebalance(FastScene):
     def construct(self):
         random_list = sample(range(100), 4)
         print(random_list)
