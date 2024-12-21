@@ -16,19 +16,17 @@ class BST:
         """Inserts a list of keys into the BST recursively"""
         def insert_helper(node, key):
             if node is None:
-                return Node(key), True
+                return Node(key)
             if key < node.key:
-                node.left, balance_change = insert_helper(node.left, key)
-                node.balance -= 1
+                node.left = insert_helper(node.left, key)
                 node.left.parent = node
             else:
-                node.right, balance_change = insert_helper(node.right, key)
-                node.balance += 1
+                node.right = insert_helper(node.right, key)
                 node.right.parent = node
-            return node, node.balance != 0
+            return node
 
         for key in keys:
-            self.root, balance_change = insert_helper(self.root, key)
+            self.root = insert_helper(self.root, key)
     
     def __init__(self, keys=None):
         self.root = None
@@ -86,3 +84,4 @@ class BST:
             return max(left_depth, right_depth)
         
         update_balances_helper(self.root)
+s
