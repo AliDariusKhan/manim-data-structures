@@ -55,13 +55,19 @@ class InsertAllElements(Scene):
             to_remove = insert_bst(self, bst, num)
             self.remove(*to_remove)
 
-
-class InsertAllElementsAndRebalance(FastScene):
+class InsertAllElementsAndRebalance(Scene):
     def construct(self):
-        random_list = sample(range(100), 4)
+        random_list = [4, 4]
         print(random_list)
         bst = BST()
         for num in random_list:
             insert_bst(self, bst, num)
             rebalance_bst(self, bst.root, bst)
-            
+
+class InsertAndAnimate(Scene):
+    def construct(self):
+        random_list = [4, 4]
+        print(random_list)
+        bst = BST()
+        for num in random_list:
+            bst.insert_single(num, self)

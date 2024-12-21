@@ -1,3 +1,6 @@
+from copy import deepcopy
+from manim import *
+
 class Node:
     """Simple class that represents a BST node"""
     def __init__(self, key):
@@ -11,6 +14,9 @@ class BST:
     """Class that represents a full binary search tree"""
     def __init__(self):
         self.root = None
+        self.arrows = None
+        self.circles = None
+        self.scale = None
     
     def insert(self, keys):
         """Inserts a list of keys into the BST recursively"""
@@ -27,6 +33,74 @@ class BST:
 
         for key in keys:
             self.root = insert_helper(self.root, key)
+
+    def insert_single(self, key, scene):
+        if self.root is None:
+            self.root = Node(key)
+            self.arrows, self.circles, self.scale = get_bst(self, True)
+            circle = deepcopy(self.circles).popitem()[1]
+            circle[0].set_stroke(color=YELLOW)
+            circle[2].set_opacity(0)
+            circle.shift(UP*10)
+            scene.add(circle)
+            scene.play(
+                circle.animate.shift(DOWN*10)
+            )
+            scene.play(
+                circle[0].animate.set_stroke(color=BLUE),
+                circle[2].animate.set_opacity(1)
+            )
+            scene.remove(circle)
+            return
+        
+        def insert_helper(node, key):
+            if node is None:
+                new_node = Node(key)
+                return new_node, new_node
+            scene.play(tracing_circle.animate.next_to(self.circles[node], UP, buff=10))
+            if key < node.key:
+                left_child, new_node = insert_helper(node.left, key)
+                node.left = left_child
+                left_child.parent = node
+            else:
+                right_child, new_node = insert_helper(node.left, key)
+                node.right = right_child
+                right_child.parent = node
+            return node, new_node
+        
+        tracing_circle = Group(
+            Circle(
+                radius=self.scale*0.375, 
+                color=YELLOW, 
+                stroke_width=self.scale*3
+            )
+            .set_fill(BLACK, opacity=1),
+            Text(
+                str(key), 
+                font_size=self.scale*25),
+            Text(
+                str(0),
+                font_size=self.scale*20,
+                fill_opacity=0).move_to(DOWN*self.scale*0.375)
+        )
+        scene.add(tracing_circle)
+        self.root, new_node = insert_helper(self.root, key)
+        self.update_balances()
+        new_arrows, new_circles, new_scale = get_bst(self)
+        scene.play(
+            *[Transform(self.circles[node], new_circles[node]) for node in self.circles.keys()],
+            *[Transform(self.arrows[node], new_arrows[node]) for node in self.arrows.keys()],
+            Transform(tracing_circle, new_circles[new_node]),
+        )
+        scene.play(FadeIn(new_arrows[new_node]))
+        scene.remove(
+            *self.arrows.values(), 
+            *self.circles.values(), 
+            tracing_circle, 
+            new_circles[new_node], 
+            new_arrows[new_node])
+        self.arrows, self.circles, self.scale = new_arrows, new_circles, new_scale
+
     
     def __init__(self, keys=None):
         self.root = None
@@ -84,4 +158,137 @@ class BST:
             return max(left_depth, right_depth)
         
         update_balances_helper(self.root)
-s
+
+def get_bst(bst: BST, left=-7, width=14, top=4, height=8, extra_space_at_top=True):
+    if bst.root is None:
+        return {}, {}, 0
+    
+    relative_positions = {}
+
+    def naively_assign(current_node: Node, current_pos: int):
+        """Assigns relative column positions to each node, with no regard for overlap"""
+        if current_node is None:
+            return
+        
+        relative_positions[current_node] = current_pos
+        naively_assign(current_node.left, current_pos-1)
+        naively_assign(current_node.right, current_pos+1)
+    
+
+    naively_assign(bst.root, 0)
+
+    def eliminate_overlap(current_node: Node):
+        """Recursively shifts the tree to eliminate overlaps and enforce a minimum horizontal distance between nodes from the bottom up"""
+        if current_node is None:
+            return
+        
+        eliminate_overlap(current_node.left)
+        eliminate_overlap(current_node.right)
+
+        def compute_rightmost_or_leftmost(current_node: Node, depth: int, depth_dict: dict, rightmost: bool):
+            """Calculates and stores either the rightmost or leftmost position in a given subtree for every depth level"""
+            if current_node is None:
+                return
+            
+            operator = max if rightmost else min
+            if depth in depth_dict.keys():
+                depth_dict[depth] = operator(depth_dict[depth], relative_positions[current_node])
+            else:
+                depth_dict[depth] = relative_positions[current_node]
+
+            compute_rightmost_or_leftmost(current_node.left, depth+1, depth_dict, rightmost)
+            compute_rightmost_or_leftmost(current_node.right, depth+1, depth_dict, rightmost)
+
+        
+        rightmost_in_left, leftmost_in_right = {}, {}
+        compute_rightmost_or_leftmost(current_node.left, 0, rightmost_in_left, True)
+        compute_rightmost_or_leftmost(current_node.right, 0, leftmost_in_right, False)
+
+        overlap_given_depth = {
+            depth: rightmost_in_left[depth] - leftmost_in_right[depth] 
+            for depth in set(rightmost_in_left.keys()).intersection(leftmost_in_right.keys())
+        }
+
+        if len(overlap_given_depth) == 0:
+            return
+
+        amount_to_shift = max(overlap_given_depth.values()) / 2 + 1
+        
+        def shift_subtree(current_node: Node, amount_to_shift: int):
+            """Shifts the entire subtree rooted at the given node to the right by some given amount (could be negative)"""
+            if current_node is None:
+                return
+            
+            relative_positions[current_node] += amount_to_shift
+            shift_subtree(current_node.left, amount_to_shift)
+            shift_subtree(current_node.right, amount_to_shift)
+        
+
+        shift_subtree(current_node.left, -amount_to_shift)
+        shift_subtree(current_node.right, amount_to_shift)
+    
+
+    eliminate_overlap(bst.root)
+
+    def get_depth(current_node: Node):
+        """Returns the depth of the current subtree"""
+        if current_node is None:
+            return 0
+        return 1 + max(get_depth(current_node.left), get_depth(current_node.right))
+
+
+    num_cols = max(relative_positions.values()) - min(relative_positions.values()) + 1
+    horiz_increment = width / (num_cols+1)
+    vert_increment = height / (get_depth(bst.root)+1+extra_space_at_top)
+    scale_factor = min(horiz_increment, vert_increment)
+    radius = scale_factor * 0.375
+    minimum_position = min(relative_positions.values())
+
+    if extra_space_at_top:
+        top -= vert_increment
+
+    circles = {}
+
+    def get_circles(current_node: Node, depth: int):
+        """Converts the relative horizontal coordinates to circle objects in the canvas"""
+        if current_node is None:
+            return
+
+        x_coord = left + (relative_positions[current_node] - minimum_position + 1)*horiz_increment
+        y_coord = top - (depth+1)*vert_increment
+
+        circles[current_node] = Group(
+            Circle(radius=radius, color=BLUE, stroke_width=scale_factor*3).set_fill(BLACK, opacity=1),
+            Text(str(current_node.key), font_size=scale_factor*25),
+            Text(str(current_node.balance), font_size=scale_factor*20).move_to(DOWN*radius*1.5)
+        ).move_to(RIGHT*x_coord + UP*y_coord)
+
+        get_circles(current_node.left, depth+1)
+        get_circles(current_node.right, depth+1)
+    
+
+    get_circles(bst.root, 0)
+
+    arrows = {}
+
+    def get_arrows(current_node: Node):
+        """Creates arrow objects in the canvas mapping from circle center to circle center"""
+        if current_node is None:
+            return
+        
+        for child in [n for n in [current_node.left, current_node.right] if n is not None]:
+            arrows[child] = Line(
+                circles[current_node].get_center(), 
+                circles[child].get_center(),
+                buff=0,
+                stroke_width=scale_factor*3,
+                z_index=-10
+            )
+        
+        get_arrows(current_node.left)
+        get_arrows(current_node.right)
+    
+
+    get_arrows(bst.root)
+
+    return arrows, circles, scale_factor

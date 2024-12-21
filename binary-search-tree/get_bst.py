@@ -3,7 +3,7 @@ from manim import *
 from collections import defaultdict
 from math import inf
 
-def get_bst(bst: BST, left=-7, width=14, top=4, height=8, extra_space_at_top=False):
+def get_bst(bst: BST, left=-7, width=14, top=4, height=8, extra_space_at_top=True):
     if bst.root is None:
         return {}, {}, 0
     
