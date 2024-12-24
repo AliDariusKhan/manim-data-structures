@@ -1,6 +1,9 @@
 from copy import deepcopy
 from manim import *
 
+LEFT_STRING = 'left'
+RIGHT_STRING = 'right'
+
 class Node:
     """Simple class that represents a BST node"""
     def __init__(self, key):
@@ -53,20 +56,32 @@ class BST:
             scene.remove(circle, *self.arrows.values(), *self.circles.values())
             return
         
-        def insert_helper(node, key, tracing_circle):
+        def insert_helper(node, parent, direction, key, tracing_circle):
             if node is None:
                 new_node = Node(key)
-                return new_node, new_node
+                setattr(parent, direction, new_node)
+                new_node.parent = parent
+                self.update_balances()
+                new_arrows, new_circles, new_scale = get_bst(self, -7, 14, 4, 8, True)
+                scene.play(
+                    *[Transform(self.circles[node], new_circles[node]) for node in self.circles.keys() if node in new_circles],
+                    *[Transform(self.arrows[node], new_arrows[node]) for node in self.arrows.keys() if node in new_arrows],
+                    Transform(tracing_circle, new_circles[new_node]),
+                )
+                scene.play(FadeIn(new_arrows[new_node]))
+                scene.remove(
+                    *self.arrows.values(), 
+                    *self.circles.values(), 
+                    tracing_circle, 
+                    new_circles[new_node], 
+                    new_arrows[new_node])
+                self.arrows, self.circles, self.scale = new_arrows, new_circles, new_scale
+                return
             scene.play(tracing_circle.animate.next_to(self.circles[node], UP))
             if key < node.key:
-                left_child, new_node = insert_helper(node.left, key, tracing_circle)
-                node.left = left_child
-                left_child.parent = node
+                insert_helper(node.left, node, LEFT_STRING, key, tracing_circle)
             else:
-                right_child, new_node = insert_helper(node.right, key, tracing_circle)
-                node.right = right_child
-                right_child.parent = node
-            return node, new_node
+                insert_helper(node.right, node, RIGHT_STRING, key, tracing_circle)
         
         tracing_circle = Group(
             Circle(
@@ -84,23 +99,7 @@ class BST:
                 fill_opacity=0).move_to(DOWN*self.scale*0.375)
         ).next_to(self.circles[self.root], UP, buff=10)
         scene.add(*self.circles.values(), tracing_circle, *self.arrows.values())
-        self.root, new_node = insert_helper(self.root, key, tracing_circle)
-        self.update_balances()
-        new_arrows, new_circles, new_scale = get_bst(self, -7, 14, 4, 8, True)
-        scene.play(
-            *[Transform(self.circles[node], new_circles[node]) for node in self.circles.keys() if node in new_circles],
-            *[Transform(self.arrows[node], new_arrows[node]) for node in self.arrows.keys() if node in new_arrows],
-            Transform(tracing_circle, new_circles[new_node]),
-        )
-        scene.play(FadeIn(new_arrows[new_node]))
-        scene.remove(
-            *self.arrows.values(), 
-            *self.circles.values(), 
-            tracing_circle, 
-            new_circles[new_node], 
-            new_arrows[new_node])
-        self.arrows, self.circles, self.scale = new_arrows, new_circles, new_scale
-
+        insert_helper(self.root, None, None, key, tracing_circle)
     
     def __init__(self, keys=None):
         self.root = None
