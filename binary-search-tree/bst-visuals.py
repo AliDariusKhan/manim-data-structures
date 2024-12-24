@@ -57,7 +57,7 @@ class InsertAllElements(Scene):
 
 class InsertAllElementsAndRebalance(Scene):
     def construct(self):
-        random_list = [4, 4]
+        random_list = [4]
         print(random_list)
         bst = BST()
         for num in random_list:
@@ -66,7 +66,7 @@ class InsertAllElementsAndRebalance(Scene):
 
 class InsertAndAnimate(Scene):
     def construct(self):
-        random_list = [4, 4]
+        random_list = [4, 8, 4, 3]
         print(random_list)
         bst = BST()
         for num in random_list:
