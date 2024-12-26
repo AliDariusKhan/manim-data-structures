@@ -68,6 +68,7 @@ class BST:
                     Transform(tracing_circle, new_circles[new_node]),
                 )
                 scene.play(FadeIn(new_arrows[new_node]))
+                self.animate_balance_propagation(new_arrows[new_node], True, scene)
                 scene.remove(
                     *self.arrows.values(), 
                     *self.circles.values(), 
@@ -75,19 +76,28 @@ class BST:
                     new_circles[new_node], 
                     new_arrows[new_node]
                     )
+                
                 self.arrows, self.circles, self.scale = new_arrows, new_circles, new_scale
                 return True
             scene.play(tracing_circle.animate.next_to(self.circles[node], UP))
             if key < node.key:
                 balance_change = insert_helper(node.left, node, LEFT_STRING, key, tracing_circle)
+                parent_balance_change = False
                 if balance_change:
                     self.animate_balance_change(node, scene, LEFT_STRING)
-                    return node.balance == -1
+                    parent_balance_change = node.balance == -1
+                if node.parent:
+                    self.animate_balance_propagation(self.arrows[node], parent_balance_change, scene)
+                return parent_balance_change
             else:
                 balance_change = insert_helper(node.right, node, RIGHT_STRING, key, tracing_circle)
+                parent_balance_change = False
                 if balance_change:
                     self.animate_balance_change(node, scene, RIGHT_STRING)
-                    return node.balance == -1
+                    parent_balance_change = node.parent and node.balance == 1
+                if node.parent:
+                    self.animate_balance_propagation(self.arrows[node], parent_balance_change, scene)
+                return parent_balance_change
         
         tracing_circle = Group(
             Circle(
@@ -106,9 +116,16 @@ class BST:
         ).next_to(self.circles[self.root], UP, buff=10)
         scene.add(*self.circles.values(), tracing_circle, *self.arrows.values())
         insert_helper(self.root, None, None, key, tracing_circle)
+
+    def animate_balance_propagation(self, arrow, balance_change, scene):
+        for time_width in [0, 1]:
+            scene.play(ShowPassingFlash(
+                arrow.copy().set_stroke(width=20).reverse_points().set_color(GREEN if balance_change else RED),
+                run_time=1,
+                time_width=time_width
+            ))
     
     def animate_balance_change(self, node, scene, child):
-        print('before', node.balance)
         node.balance += 1 if child == RIGHT_STRING else -1
         scene.add(*self.circles.values(), *self.arrows.values())
         self.circles[node][2].set_value(str(node.balance))
