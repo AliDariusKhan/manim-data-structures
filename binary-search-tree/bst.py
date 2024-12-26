@@ -61,7 +61,6 @@ class BST:
                 new_node = Node(key)
                 setattr(parent, direction, new_node)
                 new_node.parent = parent
-                self.update_balances()
                 new_arrows, new_circles, new_scale = get_bst(self, -7, 14, 4, 8, True)
                 scene.play(
                     *[Transform(self.circles[node], new_circles[node]) for node in self.circles.keys() if node in new_circles],
@@ -74,14 +73,21 @@ class BST:
                     *self.circles.values(), 
                     tracing_circle, 
                     new_circles[new_node], 
-                    new_arrows[new_node])
+                    new_arrows[new_node]
+                    )
                 self.arrows, self.circles, self.scale = new_arrows, new_circles, new_scale
-                return
+                return True
             scene.play(tracing_circle.animate.next_to(self.circles[node], UP))
             if key < node.key:
-                insert_helper(node.left, node, LEFT_STRING, key, tracing_circle)
+                balance_change = insert_helper(node.left, node, LEFT_STRING, key, tracing_circle)
+                if balance_change:
+                    self.animate_balance_change(node, scene, LEFT_STRING)
+                    return node.balance == -1
             else:
-                insert_helper(node.right, node, RIGHT_STRING, key, tracing_circle)
+                balance_change = insert_helper(node.right, node, RIGHT_STRING, key, tracing_circle)
+                if balance_change:
+                    self.animate_balance_change(node, scene, RIGHT_STRING)
+                    return node.balance == -1
         
         tracing_circle = Group(
             Circle(
@@ -101,6 +107,31 @@ class BST:
         scene.add(*self.circles.values(), tracing_circle, *self.arrows.values())
         insert_helper(self.root, None, None, key, tracing_circle)
     
+    def animate_balance_change(self, node, scene, child):
+        print('before', node.balance)
+        node.balance += 1 if child == RIGHT_STRING else -1
+        scene.add(*self.circles.values(), *self.arrows.values())
+        self.circles[node][2].set_value(str(node.balance))
+        old_circle_mobject = deepcopy(self.circles[node])
+        old_circle_mobject[2].set_value(str(node.balance))
+        new_circle_mobject = Group(
+            Circle(
+                radius=self.scale*0.375, 
+                color=BLUE, 
+                stroke_width=self.scale*3
+            )
+            .set_fill(BLACK, opacity=1),
+            Text(
+                str(node.key), 
+                font_size=self.scale*25),
+            Text(
+                str(node.balance),
+                font_size=self.scale*20,
+                fill_opacity=1).move_to(DOWN*self.scale*0.575)
+        ).move_to(self.circles[node])
+        
+        scene.play(Transform(self.circles[node], new_circle_mobject))
+
     def __init__(self, keys=None):
         self.root = None
         if keys:
