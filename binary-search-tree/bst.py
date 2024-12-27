@@ -37,7 +37,7 @@ class BST:
         for key in keys:
             self.root = insert_helper(self.root, key)
 
-    def insert_single(self, key, scene):
+    def insert_and_animate(self, key, scene):
         if self.root is None:
             self.root = Node(key)
             self.arrows, self.circles, self.scale = get_bst(self, -7, 14, 4, 8, True)

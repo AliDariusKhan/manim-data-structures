@@ -57,17 +57,24 @@ class InsertAllElements(Scene):
 
 class InsertAllElementsAndRebalance(Scene):
     def construct(self):
-        random_list = [4]
+        random_list = [4, 4]
         print(random_list)
         bst = BST()
         for num in random_list:
             insert_bst(self, bst, num)
             rebalance_bst(self, bst.root, bst)
 
+class InsertAndDelete(Scene):
+    def construct(self):
+        bst = BST()
+        bst.insert_and_animate(4, self)
+        bst.insert_and_animate(5, self)
+
 class InsertAndAnimate(Scene):
     def construct(self):
-        random_list = [4, 8, 4, 3]
+        random_list = sample(range(100), 64)
+        # random_list = [44, 37, 47, 77, 68]
         print(random_list)
         bst = BST()
         for num in random_list:
-            bst.insert_single(num, self)
+            bst.insert_and_animate(num, self)
