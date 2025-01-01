@@ -11,7 +11,6 @@ class Node:
         self.left = None
         self.right = None
         self.balance = 0
-        self.parent = None
 
 class BST:
     """Class that represents a full binary search tree"""
@@ -28,10 +27,8 @@ class BST:
                 return Node(key)
             if key < node.key:
                 node.left = insert_helper(node.left, key)
-                node.left.parent = node
             else:
                 node.right = insert_helper(node.right, key)
-                node.right.parent = node
             return node
 
         for key in keys:
@@ -60,7 +57,6 @@ class BST:
             if node is None:
                 new_node = Node(key)
                 setattr(parent, direction, new_node)
-                new_node.parent = parent
                 new_arrows, new_circles, new_scale = get_bst(self, -7, 14, 4, 8, True)
                 scene.play(
                     *[Transform(self.circles[node], new_circles[node]) for node in self.circles.keys() if node in new_circles],
@@ -87,10 +83,10 @@ class BST:
                     self.animate_balance_change(node, scene, -1)
                 if node.balance == -2:
                     if node.left.balance == 1:
-                        self.left_rotate(scene, node.left)
-                    node = self.right_rotate(scene, node)
+                        self.left_rotate(scene, node.left, parent)
+                    node = self.right_rotate(scene, node, parent)
                 parent_balance_change = balance_change and node.balance == -1
-                if node.parent:
+                if parent:
                     self.animate_balance_propagation(self.arrows[node], parent_balance_change, scene)
                 return parent_balance_change
             else:
@@ -99,11 +95,11 @@ class BST:
                     self.animate_balance_change(node, scene, 1)
                 if node.balance == 2:
                     if node.right.balance == -1:
-                        self.right_rotate(scene, node.right)
-                    node = self.left_rotate(scene, node)
+                        self.right_rotate(scene, node.right, parent)
+                    node = self.left_rotate(scene, node, parent)
                     
                 parent_balance_change = balance_change and node.balance == 1
-                if node.parent:
+                if parent:
                     self.animate_balance_propagation(self.arrows[node], parent_balance_change, scene)
                 return parent_balance_change
         
@@ -125,19 +121,15 @@ class BST:
         scene.add(*self.circles.values(), tracing_circle, *self.arrows.values())
         insert_helper(self.root, None, None, key, tracing_circle)
 
-    def left_rotate(self, scene, old_root):
+    def left_rotate(self, scene, old_root, parent):
         new_root = old_root.right
         old_root.right = new_root.left
-        if old_root.right:
-            old_root.right.parent = old_root
         new_root.left = old_root
-        if old_root.parent:
-            parent_to_root = 'left' if old_root.parent.left == old_root else 'right'
-            setattr(old_root.parent, parent_to_root, new_root)
+        if parent:
+            parent_to_root = LEFT_STRING if parent.left == old_root else RIGHT_STRING
+            setattr(parent, parent_to_root, new_root)
         else:
             self.root = new_root
-        new_root.parent = old_root.parent
-        old_root.parent = new_root
         new_arrows, new_circles, new_scale = get_bst(self)
         transforms = [Transform(self.circles[node], new_circles[node]) 
                     for node in self.circles.keys() 
@@ -169,20 +161,16 @@ class BST:
         
         return new_root
 
-    def right_rotate(self, scene, old_root):
+    def right_rotate(self, scene, old_root, parent):
         new_root = old_root.left
         old_root.left = new_root.right
-        if old_root.left:
-            old_root.left.parent = old_root
         new_root.right = old_root
         parent_to_root = None
-        if old_root.parent:
-            parent_to_root = 'left' if old_root.parent.left == old_root else 'right'
-            setattr(old_root.parent, parent_to_root, new_root)
+        if parent:
+            parent_to_root = LEFT_STRING if parent.left == old_root else RIGHT_STRING
+            setattr(parent, parent_to_root, new_root)
         else:
             self.root = new_root
-        new_root.parent = old_root.parent
-        old_root.parent = new_root
         new_arrows, new_circles, new_scale = get_bst(self)
         transforms = [Transform(self.circles[node], new_circles[node]) 
                     for node in self.circles.keys() 
