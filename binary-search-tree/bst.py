@@ -132,35 +132,35 @@ class BST:
         scene.remove(*self.arrows.values(), *self.circles.values())
         self.circles, self.arrows, self.scale = new_circles, new_arrows, new_scale
         if new_root.balance == 2 and old_root.balance == 2:
-            self.animate_balance_change(old_root, scene, -1 - old_root.balance)
-            self.animate_balance_change(new_root, scene, -new_root.balance)
+            self.animate_balance_change(old_root, scene, -1)
+            self.animate_balance_change(new_root, scene, 0)
         elif old_root.balance == 2 and new_root.balance == 1:
-            self.animate_balance_change(old_root, scene, -old_root.balance)
-            self.animate_balance_change(new_root, scene, -new_root.balance)
+            self.animate_balance_change(old_root, scene, 0)
+            self.animate_balance_change(new_root, scene, 0)
         elif old_root.balance == 1 and new_root.balance == -1:
-            self.animate_balance_change(old_root, scene, - old_root.balance)
-            self.animate_balance_change(new_root, scene, -2 - new_root.balance)
+            self.animate_balance_change(old_root, scene, 0)
+            self.animate_balance_change(new_root, scene, -2)
         elif old_root.balance == 1 and new_root.balance == 0:
-            self.animate_balance_change(old_root, scene, -old_root.balance)
-            self.animate_balance_change(new_root, scene, -1 - new_root.balance)
+            self.animate_balance_change(old_root, scene, 0)
+            self.animate_balance_change(new_root, scene, -1)
         elif old_root.balance == 1 and new_root.balance == 1:
-            self.animate_balance_change(old_root, scene, -1 - old_root.balance)
-            self.animate_balance_change(new_root, scene, -1 - new_root.balance)
+            self.animate_balance_change(old_root, scene, -1)
+            self.animate_balance_change(new_root, scene, -1)
         elif new_root.balance == -2 and old_root.balance == -2:
-            self.animate_balance_change(old_root, scene, 1 - old_root.balance)
-            self.animate_balance_change(new_root, scene, -new_root.balance)
+            self.animate_balance_change(old_root, scene, 1)
+            self.animate_balance_change(new_root, scene, 0)
         elif old_root.balance == -2 and new_root.balance == -1:
-            self.animate_balance_change(old_root, scene, -old_root.balance)
-            self.animate_balance_change(new_root, scene, -new_root.balance)
+            self.animate_balance_change(old_root, scene, 0)
+            self.animate_balance_change(new_root, scene, 0)
         elif old_root.balance == -1 and new_root.balance == 1:
-            self.animate_balance_change(old_root, scene, - old_root.balance)
-            self.animate_balance_change(new_root, scene, 2 - new_root.balance)
+            self.animate_balance_change(old_root, scene, 0)
+            self.animate_balance_change(new_root, scene, 2)
         elif old_root.balance == -1 and new_root.balance == 0:
-            self.animate_balance_change(old_root, scene, -old_root.balance)
-            self.animate_balance_change(new_root, scene, 1 - new_root.balance)
+            self.animate_balance_change(old_root, scene, 0)
+            self.animate_balance_change(new_root, scene, 1)
         else:
-            self.animate_balance_change(old_root, scene, 1 - old_root.balance)
-            self.animate_balance_change(new_root, scene, 1 - new_root.balance)    
+            self.animate_balance_change(old_root, scene, 1)
+            self.animate_balance_change(new_root, scene, 1)    
         return new_root
 
     def animate_balance_propagation(self, arrow, balance_change, scene):
@@ -171,8 +171,8 @@ class BST:
                 time_width=time_width
             ))
     
-    def animate_balance_change(self, node, scene, change):
-        node.balance += change
+    def animate_balance_change(self, node, scene, new_balance):
+        node.balance = new_balance
         scene.add(*self.circles.values(), *self.arrows.values())
         self.circles[node][2].set_value(str(node.balance))
         new_circle_mobject = Group(
