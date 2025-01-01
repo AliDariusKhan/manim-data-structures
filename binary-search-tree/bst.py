@@ -1,8 +1,8 @@
 from copy import deepcopy
 from manim import *
 
-LEFT_STRING = 'left'
-RIGHT_STRING = 'right'
+LEFT = 'left'
+RIGHT = 'right'
 
 class Node:
     """Simple class that represents a BST node"""
@@ -59,7 +59,7 @@ class BST:
         def insert_helper(node, parent, right, key, tracing_circle):
             if node is None:
                 new_node = Node(key)
-                setattr(parent, RIGHT_STRING if right else LEFT_STRING, new_node)
+                setattr(parent, RIGHT if right else LEFT, new_node)
                 new_node.parent = parent
                 new_arrows, new_circles, new_scale = get_bst(self, -7, 14, 4, 8, True)
                 scene.play(
