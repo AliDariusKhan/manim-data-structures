@@ -80,9 +80,9 @@ class BST:
                 self.arrows, self.circles, self.scale = new_arrows, new_circles, new_scale
                 return True
             scene.play(tracing_circle.animate.next_to(self.circles[node], UP))
+            parent_balance_change = False
             if key < node.key:
                 balance_change = insert_helper(node.left, node, LEFT_STRING, key, tracing_circle)
-                parent_balance_change = False
                 if balance_change:
                     self.animate_balance_change(node, scene, -1)
                 if node.balance == -2:
@@ -95,7 +95,6 @@ class BST:
                 return parent_balance_change
             else:
                 balance_change = insert_helper(node.right, node, RIGHT_STRING, key, tracing_circle)
-                parent_balance_change = False
                 if balance_change:
                     self.animate_balance_change(node, scene, 1)
                 if node.balance == 2:
