@@ -77,31 +77,18 @@ class BST:
                 return True
             scene.play(tracing_circle.animate.next_to(self.circles[node], UP))
             parent_balance_change = False
-            if key < node.key:
-                balance_change = insert_helper(node.left, node, LEFT_STRING, key, tracing_circle)
-                if balance_change:
-                    self.animate_balance_change(node, scene, -1)
-                if node.balance == -2:
-                    if node.left.balance == 1:
-                        self.rotate(scene, node.left, node, LEFT_STRING)
-                    node = self.rotate(scene, node, parent, RIGHT_STRING)
-                parent_balance_change = balance_change and node.balance == -1
-                if parent:
-                    self.animate_balance_propagation(self.arrows[node], parent_balance_change, scene)
-                return parent_balance_change
-            else:
-                balance_change = insert_helper(node.right, node, RIGHT_STRING, key, tracing_circle)
-                if balance_change:
-                    self.animate_balance_change(node, scene, 1)
-                if node.balance == 2:
-                    if node.right.balance == -1:
-                        self.rotate(scene, node.right, node, RIGHT_STRING)
-                    node = self.rotate(scene, node, parent, LEFT_STRING)
-                    
-                parent_balance_change = balance_change and node.balance == 1
-                if parent:
-                    self.animate_balance_propagation(self.arrows[node], parent_balance_change, scene)
-                return parent_balance_change
+            direction = LEFT_STRING if key < node.key else RIGHT_STRING
+            balance_change = insert_helper(getattr(node, direction), node, direction, key, tracing_circle)
+            if balance_change:
+                self.animate_balance_change(node, scene, 1 if direction == RIGHT_STRING else -1)
+            if abs(node.balance) == 2:
+                if (node.balance > 0) != (getattr(node, direction).balance > 0):
+                    self.rotate(scene, getattr(node, direction), node, direction)
+                node = self.rotate(scene, node, parent, RIGHT_STRING if direction == LEFT_STRING else LEFT_STRING)
+            parent_balance_change = balance_change and abs(node.balance) == 1
+            if parent:
+                self.animate_balance_propagation(self.arrows[node], parent_balance_change, scene)
+            return parent_balance_change
         
         tracing_circle = Group(
             Circle(
@@ -156,10 +143,24 @@ class BST:
         elif old_root.balance == 1 and new_root.balance == 0:
             self.animate_balance_change(old_root, scene, -old_root.balance)
             self.animate_balance_change(new_root, scene, -1 - new_root.balance)
-        else:
+        elif old_root.balance == 1 and new_root.balance == 1:
             self.animate_balance_change(old_root, scene, -1 - old_root.balance)
             self.animate_balance_change(new_root, scene, -1 - new_root.balance)
-        
+        elif new_root.balance == -2 and old_root.balance == -2:
+            self.animate_balance_change(old_root, scene, 1 - old_root.balance)
+            self.animate_balance_change(new_root, scene, -new_root.balance)
+        elif old_root.balance == -2 and new_root.balance == -1:
+            self.animate_balance_change(old_root, scene, -old_root.balance)
+            self.animate_balance_change(new_root, scene, -new_root.balance)
+        elif old_root.balance == -1 and new_root.balance == 1:
+            self.animate_balance_change(old_root, scene, - old_root.balance)
+            self.animate_balance_change(new_root, scene, 2 - new_root.balance)
+        elif old_root.balance == -1 and new_root.balance == 0:
+            self.animate_balance_change(old_root, scene, -old_root.balance)
+            self.animate_balance_change(new_root, scene, 1 - new_root.balance)
+        else:
+            self.animate_balance_change(old_root, scene, 1 - old_root.balance)
+            self.animate_balance_change(new_root, scene, 1 - new_root.balance)    
         return new_root
 
     def animate_balance_propagation(self, arrow, balance_change, scene):
