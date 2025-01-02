@@ -48,6 +48,9 @@ class BST:
             self.root = insert_helper(self.root, key)
 
     def insert_and_animate(self, key, scene):
+        self.operate(key, scene, True)
+
+    def operate(self, key, scene, insert):
         if self.root is None:
             self.root = Node(key)
             self.arrows, self.circles, self.scale = get_bst(self, -7, 14, 4, 8, True)
@@ -66,7 +69,7 @@ class BST:
             scene.remove(circle, *self.arrows.values(), *self.circles.values())
             return
         
-        def insert_helper(node, parent, direction, key, tracing_circle):
+        def operate_helper(node, parent, direction, key, tracing_circle, insert=True):
             if node is None:
                 new_node = Node(key)
                 setattr(parent, direction, new_node)
@@ -91,7 +94,7 @@ class BST:
             scene.play(tracing_circle.animate.next_to(self.circles[node], UP))
             parent_balance_change = False
             direction = LEFT_STRING if key < node.key else RIGHT_STRING
-            balance_change = insert_helper(getattr(node, direction), node, direction, key, tracing_circle)
+            balance_change = operate_helper(getattr(node, direction), node, direction, key, tracing_circle)
             new_balance = node.balance + (1 if direction == RIGHT_STRING else -1)
             if balance_change:
                 self.animate_balance_change(node, scene, new_balance)
@@ -120,7 +123,7 @@ class BST:
                 fill_opacity=0).move_to(DOWN*self.scale*0.375)
         ).next_to(self.circles[self.root], UP, buff=10)
         scene.add(*self.circles.values(), tracing_circle, *self.arrows.values())
-        insert_helper(self.root, None, None, key, tracing_circle)
+        operate_helper(self.root, None, None, key, tracing_circle)
 
     def rotate(self, scene, old_root, parent, direction):
         other_direction = RIGHT_STRING if direction == LEFT_STRING else LEFT_STRING
