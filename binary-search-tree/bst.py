@@ -79,8 +79,9 @@ class BST:
             parent_balance_change = False
             direction = LEFT_STRING if key < node.key else RIGHT_STRING
             balance_change = insert_helper(getattr(node, direction), node, direction, key, tracing_circle)
+            new_balance = node.balance + (1 if direction == RIGHT_STRING else -1)
             if balance_change:
-                self.animate_balance_change(node, scene, 1 if direction == RIGHT_STRING else -1)
+                self.animate_balance_change(node, scene, new_balance)
             if abs(node.balance) == 2:
                 if (node.balance > 0) != (getattr(node, direction).balance > 0):
                     self.rotate(scene, getattr(node, direction), node, direction)
