@@ -4,6 +4,19 @@ from manim import *
 LEFT_STRING = 'left'
 RIGHT_STRING = 'right'
 
+post_rotation_balance = {
+    (2,  2):  (-1,  0),
+    (2,  1):  ( 0,  0),
+    (1, -1):  ( 0, -2),
+    (1,  0):  ( 0, -1),
+    (1,  1):  (-1, -1),
+    (-2, -2): ( 1,  0),
+    (-2, -1): ( 0,  0),
+    (-1,  1): ( 0,  2),
+    (-1,  0): ( 0,  1),
+    (-1, -1): ( 1,  1)
+}
+
 class Node:
     """Simple class that represents a BST node"""
     def __init__(self, key):
@@ -132,36 +145,9 @@ class BST:
         scene.play(*transforms)
         scene.remove(*self.arrows.values(), *self.circles.values())
         self.circles, self.arrows, self.scale = new_circles, new_arrows, new_scale
-        if new_root.balance == 2 and old_root.balance == 2:
-            self.animate_balance_change(old_root, scene, -1)
-            self.animate_balance_change(new_root, scene, 0)
-        elif old_root.balance == 2 and new_root.balance == 1:
-            self.animate_balance_change(old_root, scene, 0)
-            self.animate_balance_change(new_root, scene, 0)
-        elif old_root.balance == 1 and new_root.balance == -1:
-            self.animate_balance_change(old_root, scene, 0)
-            self.animate_balance_change(new_root, scene, -2)
-        elif old_root.balance == 1 and new_root.balance == 0:
-            self.animate_balance_change(old_root, scene, 0)
-            self.animate_balance_change(new_root, scene, -1)
-        elif old_root.balance == 1 and new_root.balance == 1:
-            self.animate_balance_change(old_root, scene, -1)
-            self.animate_balance_change(new_root, scene, -1)
-        elif new_root.balance == -2 and old_root.balance == -2:
-            self.animate_balance_change(old_root, scene, 1)
-            self.animate_balance_change(new_root, scene, 0)
-        elif old_root.balance == -2 and new_root.balance == -1:
-            self.animate_balance_change(old_root, scene, 0)
-            self.animate_balance_change(new_root, scene, 0)
-        elif old_root.balance == -1 and new_root.balance == 1:
-            self.animate_balance_change(old_root, scene, 0)
-            self.animate_balance_change(new_root, scene, 2)
-        elif old_root.balance == -1 and new_root.balance == 0:
-            self.animate_balance_change(old_root, scene, 0)
-            self.animate_balance_change(new_root, scene, 1)
-        else:
-            self.animate_balance_change(old_root, scene, 1)
-            self.animate_balance_change(new_root, scene, 1)    
+        new_root_new_balance, old_root_new_balance = post_rotation_balance[(old_root.balance, new_root.balance)]
+        self.animate_balance_change(old_root, scene, old_root_new_balance)
+        self.animate_balance_change(new_root, scene, new_root_new_balance)
         return new_root
 
     def animate_balance_propagation(self, arrow, balance_change, scene):
