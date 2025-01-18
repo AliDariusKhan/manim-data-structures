@@ -38,7 +38,6 @@ class DrawManyBSTs(Scene):
             self.play(Transform(full_bst, new_bst))
             self.wait()
 
-
 class InsertOneElement(Scene):
     """Inserts a random element to a random BST of size 30"""
     def construct(self):
@@ -67,14 +66,25 @@ class InsertAllElementsAndRebalance(Scene):
 class InsertAndDelete(Scene):
     def construct(self):
         bst = BST()
+        print(bst.scale)
         bst.insert_and_animate(4, self)
         bst.insert_and_animate(5, self)
 
 class InsertAndAnimate(Scene):
     def construct(self):
-        random_list = sample(range(100), 64)
+        random_list = sample(range(100), 4)
         # random_list = [44, 37, 47, 77, 68]
+        random_list = [0, -3, -5, -6, -7]
         print(random_list)
         bst = BST()
-        for num in random_list:
-            bst.insert_and_animate(num, self)
+        # for num in random_list:
+        #     bst.insert_and_animate(num, self)
+        bst.insert_and_animate(0, self)
+        bst.insert_and_animate(-1, self) 
+        bst.insert_and_animate(1, self)
+        bst.insert_and_animate(2, self)
+        bst.delete_and_animate(2, self)
+        bst.insert_and_animate(2, self)
+        bst.delete_and_animate(-1, self)
+        bst.insert_and_animate(-1, self)
+        bst.delete_and_animate(2, self)
