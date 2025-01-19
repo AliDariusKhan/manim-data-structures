@@ -80,11 +80,7 @@ class InsertAndAnimate(Scene):
         # for num in random_list:
         #     bst.insert_and_animate(num, self)
         bst.insert_and_animate(0, self)
-        bst.insert_and_animate(-1, self) 
         bst.insert_and_animate(1, self)
-        bst.insert_and_animate(2, self)
-        bst.delete_and_animate(2, self)
-        bst.insert_and_animate(2, self)
-        bst.delete_and_animate(-1, self)
         bst.insert_and_animate(-1, self)
-        bst.delete_and_animate(2, self)
+        bst.insert_and_animate(0.5, self)
+        bst.delete_and_animate(1, self)

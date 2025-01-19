@@ -53,6 +53,11 @@ class BST:
     def delete_and_animate(self, key, scene):
         self.operate(key, scene, False)
 
+    def get_circles_and_arrows_in_subtree(self, node):
+        if not node:
+            return []
+        return [self.arrows[node], self.circles[node]] + self.get_circles_and_arrows_in_subtree(node.left) + self.get_circles_and_arrows_in_subtree(node.right)
+
     def operate(self, key, scene, insert):
         if self.root is None:
             self.root = Node(key)
@@ -84,7 +89,7 @@ class BST:
                 )
                 scene.play(FadeIn(new_arrows[new_node]))
                 balance_animation = self.animate_balance_propagation(new_arrows[new_node], True)
-                scene.play(*balance_animation)
+                scene.play(*balance_animation, rate_func=linear)
                 scene.remove(
                     *self.arrows.values(), 
                     *self.circles.values(), 
@@ -97,22 +102,62 @@ class BST:
                 return True
             scene.play(tracing_circle.animate.next_to(self.circles[node], UP))
             if not insert and node.key == key:
-                transformations = [FadeOut(tracing_circle), FadeOut(self.circles[node])]
-                if parent:
-                    transformations.extend(self.animate_balance_propagation(self.arrows[node], True))
-                    transformations.append(FadeOut(self.arrows[node]))
-                    setattr(parent, direction, None)
-                else:
-                    self.root = None
-                scene.play(*transformations)
-                new_arrows, new_circles, new_scale = get_bst(self, -7, 14, 4, 8, True)
-                scene.play(
-                    *[Transform(self.circles[node], new_circles[node]) for node in new_circles.keys()],
-                    *[Transform(self.arrows[node], new_arrows[node]) for node in new_arrows.keys()],
-                )
-                scene.remove(*self.arrows.values(), *self.circles.values(), tracing_circle)
-                self.arrows, self.circles, self.scale = new_arrows, new_circles, new_scale
-                return True
+                if not node.left and not node.right:
+                    transformations = [FadeOut(tracing_circle), FadeOut(self.circles[node])]
+                    if parent:
+                        transformations.extend(self.animate_balance_propagation(self.arrows[node], True))
+                        transformations.append(FadeOut(self.arrows[node]))
+                        setattr(parent, direction, None)
+                    else:
+                        self.root = None
+                    scene.play(*transformations)
+                    new_arrows, new_circles, new_scale = get_bst(self, -7, 14, 4, 8, True)
+                    scene.play(
+                        *[Transform(self.circles[node], new_circles[node]) for node in new_circles.keys()],
+                        *[Transform(self.arrows[node], new_arrows[node]) for node in new_arrows.keys()],
+                    )
+                    scene.remove(*self.arrows.values(), *self.circles.values(), tracing_circle)
+                    self.arrows, self.circles, self.scale = new_arrows, new_circles, new_scale
+                    return True
+                if not node.left or not node.right:
+                    present_child = node.left or node.right
+                    transformations = [
+                        FadeOut(tracing_circle),
+                        FadeOut(self.circles[node]),
+                        FadeOut(self.arrows[present_child])
+                    ]
+                    if parent:
+                        setattr(parent, direction, present_child)
+                        transformations.extend(self.animate_balance_propagation(self.arrows[node], True))
+                    else:
+                        self.root = present_child                        
+                    new_arrows, new_circles, new_scale = get_bst(self, -7, 14, 4, 8, True)
+                    transformations.extend(
+                        [*[Transform(self.circles[node], new_circles[node]) for node in new_circles.keys()],
+                        *[Transform(self.arrows[node], new_arrows[node]) for node in new_arrows.keys()]])
+                    scene.play(*transformations)
+                    scene.remove(*self.arrows.values(), *self.circles.values(), tracing_circle)
+                    self.arrows, self.circles, self.scale = new_arrows, new_circles, new_scale
+                    # present_child = node.left or node.right
+                    # subtree_mobjects = Group(*self.get_circles_and_arrows_in_subtree(present_child))
+                    # transformations = [subtree_mobjects.animate.shift(
+                    #     self.circles[node].get_center() - self.circles[present_child].get_center())]
+                    # transformations.extend([
+                    #     FadeOut(tracing_circle),
+                    #     FadeOut(self.circles[node])])
+                    # scene.play(*transformations)
+                    # transformations = [MoveAlongPath(mobject, node) for mobject in subtree_mobjects]
+                    
+                    # transformations = [
+                    #     FadeOut(tracing_circle),
+                    #     FadeOut(self.circles[node]),
+                    #     FadeOut(self.arrows[present_child])]
+                    return True
+                    
+                    
+                    
+
+            # Implement deletion for node with 1 child (save balance of deleted node, increment or decrement depending on which child is present)
             parent_balance_change = False
             direction = LEFT_STRING if key < node.key else RIGHT_STRING
             balance_change = operate_helper(getattr(node, direction), node, direction, key, tracing_circle, insert)            
